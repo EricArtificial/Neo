@@ -15,41 +15,25 @@
           :class="{ active: item === activeNav }"
           @click.prevent="activeNav = item"
         >
-          {{ t(`nav.${item}`) }}
+          {{ item }}
         </a>
       </nav>
-      <button class="nav-btn" @click="toggleLang">{{ locale === 'EN' ? '中' : 'EN' }}</button>
+      <button class="nav-btn" @click="toggleLang">{{ currentLang === 'EN' ? '中' : 'EN' }}</button>
     </header>
 
     <main class="container">
       <template v-if="activeNav === 'Dashboard'">
-        <section class="hero card dashboard-hero-stripe">
-          <div class="stripe-gradient-bg"></div>
-          <div class="dashboard-hero-content">
-            <div class="dashboard-hero-eyebrow">NeoVision AI</div>
-            <h1 class="dashboard-hero-title">
-              <span class="hero-gradient">{{ t('dashboard.title') }}</span>
-            </h1>
-            <div class="dashboard-hero-subtitle">
-              {{ t('dashboard.product_sub1') }}<br />
-              {{ t('dashboard.product_sub2') }}<br />
-              {{ t('dashboard.product_sub3') }}
-            </div>
-            <div class="dashboard-hero-actions">
-              <button class="dashboard-hero-btn dashboard-hero-btn-primary">{{ t('dashboard.stripe_get_started') }}</button>
-              <button class="dashboard-hero-btn dashboard-hero-btn-google">
-                <span class="google-icon"></span>{{ t('dashboard.stripe_google') }}
-              </button>
-            </div>
-          </div>
+        <section class="hero card">
+          <h1><span class="hero-gradient">AI Dashboard</span> for Image Authenticity Detection</h1>
+          <p class="hero-subtitle">
+            ESP camera streams are monitored in real time, tampering is detected by AI, and outputs are prepared for result visualization and report export.
+          </p>
         </section>
-
-        <h1>Dashboard</h1>
 
         <section class="card workflow-panel">
           <div class="panel-header">
-            <h2>{{ t('dashboard.workflow') }}</h2>
-            <span class="live-pill">{{ t('dashboard.status') }}</span>
+            <h2>Workflow Pipeline</h2>
+            <span class="live-pill">Real-time Status</span>
           </div>
 
           <div class="workflow-bar">
@@ -62,15 +46,15 @@
 
                 <div class="step-stats">
                   <div>
-                    <p>{{ t('dashboard.uploaded') }}</p>
+                    <p>Uploaded</p>
                     <strong>{{ formatNumber(step.uploaded) }}</strong>
                   </div>
                   <div>
-                    <p>{{ t('dashboard.tampered') }}</p>
+                    <p>Tampered</p>
                     <strong>{{ formatNumber(step.tampered) }}</strong>
                   </div>
                   <div>
-                    <p>{{ t('dashboard.avgConfidence') }}</p>
+                    <p>Avg Confidence</p>
                     <strong>{{ step.confidence }}%</strong>
                   </div>
                 </div>
@@ -83,10 +67,10 @@
         <section class="feature-grid">
           <article class="card feature-card">
             <div class="card-head">
-              <h3>{{ t('dashboard.liveFeed') }}</h3>
-              <span class="tag">{{ t('dashboard.streaming') }}</span>
+              <h3>Live Image Feed</h3>
+              <span class="tag">Streaming</span>
             </div>
-            <p>{{ t('dashboard.feedDesc') }}</p>
+            <p>Latest image frames uploaded from ESP devices with device ID, timestamp, and stream state.</p>
             <ul class="feed-list">
               <li v-for="item in recentUploads" :key="item.id">
                 <div>
@@ -100,10 +84,10 @@
 
           <article class="card feature-card">
             <div class="card-head">
-              <h3>{{ t('dashboard.detectionQueue') }}</h3>
-              <span class="tag">{{ t('dashboard.pipeline') }}</span>
+              <h3>Detection Queue</h3>
+              <span class="tag">Pipeline</span>
             </div>
-            <p>{{ t('dashboard.queueDesc') }}</p>
+            <p>Real-time processing queue from uploaded frames to model inference readiness.</p>
             <div class="queue-list">
               <div class="queue-item" v-for="queue in detectionQueue" :key="queue.name">
                 <div class="queue-meta">
@@ -119,26 +103,26 @@
 
           <article class="card feature-card">
             <div class="card-head">
-              <h3>{{ t('dashboard.aiResults') }}</h3>
-              <span class="tag">{{ t('dashboard.inference') }}</span>
+              <h3>AI Analysis Results</h3>
+              <span class="tag">Inference</span>
             </div>
-            <p>{{ t('dashboard.aiDesc') }}</p>
+            <p>Tampered regions and confidence scores generated with explainable AI outputs.</p>
             <div class="analysis-preview">
               <div class="preview-box original"></div>
               <div class="preview-box heatmap"></div>
               <div class="analysis-text">
-                <span>{{ t('dashboard.lastResult') }}: {{ analysisResult.summary }}</span>
-                <strong>{{ analysisResult.confidence }}% {{ t('dashboard.tamperProb') }}</strong>
+                <span>Last Result: {{ analysisResult.summary }}</span>
+                <strong>{{ analysisResult.confidence }}% tampering probability</strong>
               </div>
             </div>
           </article>
 
           <article class="card feature-card">
             <div class="card-head">
-              <h3>{{ t('dashboard.reportExport') }}</h3>
-              <span class="tag">{{ t('dashboard.pdf') }}</span>
+              <h3>Report Export Center</h3>
+              <span class="tag">PDF</span>
             </div>
-            <p>{{ t('dashboard.reportDesc') }}</p>
+            <p>Generate and export forensic results into downloadable reports for audit and compliance.</p>
             <div class="report-list">
               <button class="report-btn" v-for="report in reports" :key="report.id">
                 {{ report.name }}
@@ -150,16 +134,16 @@
 
       <template v-else-if="activeNav === 'Image Uploads'">
         <section class="hero card page-hero">
-          <p class="eyebrow">{{ t('uploads.eyebrow') }}</p>
-          <h1>{{ t('uploads.title') }}</h1>
-          <p class="hero-subtitle">{{ t('uploads.subtitle') }}</p>
+          <p class="eyebrow">Capture & Ingestion</p>
+          <h1>Image Upload Monitoring</h1>
+          <p class="hero-subtitle">Track ESP camera upload throughput, transfer latency, and device stream quality in one minimal control view.</p>
         </section>
 
         <section class="page-grid two-col">
           <article class="card page-card">
             <div class="panel-header">
-              <h2>{{ t('uploads.overview') }}</h2>
-              <span class="tag">{{ t('uploads.live') }}</span>
+              <h2>Upload Overview</h2>
+              <span class="tag">Live</span>
             </div>
             <div class="kpi-grid">
               <div class="kpi-item" v-for="item in uploadOverview" :key="item.label">
@@ -171,8 +155,8 @@
 
           <article class="card page-card">
             <div class="panel-header">
-              <h2>{{ t('uploads.cameraHealth') }}</h2>
-              <span class="tag">{{ t('uploads.fleet') }}</span>
+              <h2>Camera Health</h2>
+              <span class="tag">Fleet</span>
             </div>
             <ul class="simple-list">
               <li v-for="device in uploadDevices" :key="device.name">
@@ -187,18 +171,18 @@
 
           <article class="card page-card span-2">
             <div class="panel-header">
-              <h2>{{ t('uploads.latestBatches') }}</h2>
-              <button class="ghost-btn">{{ t('uploads.exportCsv') }}</button>
+              <h2>Latest Upload Batches</h2>
+              <button class="ghost-btn">Export CSV</button>
             </div>
             <div class="table-wrap">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>{{ t('uploads.batch') }}</th>
-                    <th>{{ t('uploads.device') }}</th>
-                    <th>{{ t('uploads.frames') }}</th>
-                    <th>{{ t('uploads.tampered') }}</th>
-                    <th>{{ t('uploads.uploadedAt') }}</th>
+                    <th>Batch</th>
+                    <th>Device</th>
+                    <th>Frames</th>
+                    <th>Tampered</th>
+                    <th>Uploaded At</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -216,19 +200,18 @@
         </section>
       </template>
 
-
       <template v-else-if="activeNav === 'Detection Results'">
         <section class="hero card page-hero">
-          <p class="eyebrow">{{ t('results.eyebrow') }}</p>
-          <h1>{{ t('results.title') }}</h1>
-          <p class="hero-subtitle">{{ t('results.subtitle') }}</p>
+          <p class="eyebrow">Model Inference</p>
+          <h1>Detection Results</h1>
+          <p class="hero-subtitle">Review model outputs, tampering confidence, and explainability artifacts from recent image inspections.</p>
         </section>
 
         <section class="page-grid two-col">
           <article class="card page-card">
             <div class="panel-header">
-              <h2>{{ t('results.summary') }}</h2>
-              <span class="tag">{{ t('results.h24') }}</span>
+              <h2>Inference Summary</h2>
+              <span class="tag">24h</span>
             </div>
             <div class="kpi-grid">
               <div class="kpi-item" v-for="item in resultSummary" :key="item.label">
@@ -240,8 +223,8 @@
 
           <article class="card page-card">
             <div class="panel-header">
-              <h2>{{ t('results.flagged') }}</h2>
-              <span class="tag">{{ t('results.priority') }}</span>
+              <h2>Flagged Cases</h2>
+              <span class="tag">Priority</span>
             </div>
             <ul class="simple-list">
               <li v-for="item in resultCases" :key="item.id">
@@ -256,34 +239,33 @@
 
           <article class="card page-card span-2">
             <div class="panel-header">
-              <h2>{{ t('results.visualization') }}</h2>
-              <button class="ghost-btn">{{ t('results.openViewer') }}</button>
+              <h2>Visualization Panel</h2>
+              <button class="ghost-btn">Open Full Viewer</button>
             </div>
             <div class="analysis-preview larger">
               <div class="preview-box original"></div>
               <div class="preview-box heatmap"></div>
               <div class="analysis-text">
-                <span>{{ t('results.modelExplanation') }}</span>
-                <strong>{{ t('results.explainText') }}</strong>
+                <span>Model Explanation</span>
+                <strong>Region-level inconsistencies indicate compositing probability above 95% in the detected face area.</strong>
               </div>
             </div>
           </article>
         </section>
       </template>
 
-
       <template v-else-if="activeNav === 'Reports'">
         <section class="hero card page-hero">
-          <p class="eyebrow">{{ t('reports.eyebrow') }}</p>
-          <h1>{{ t('reports.title') }}</h1>
-          <p class="hero-subtitle">{{ t('reports.subtitle') }}</p>
+          <p class="eyebrow">Compliance Workspace</p>
+          <h1>Reports</h1>
+          <p class="hero-subtitle">Generate, schedule, and export investigation-ready PDF reports for stakeholders and compliance teams.</p>
         </section>
 
         <section class="page-grid two-col">
           <article class="card page-card">
             <div class="panel-header">
-              <h2>{{ t('reports.templates') }}</h2>
-              <span class="tag">{{ t('reports.library') }}</span>
+              <h2>Report Templates</h2>
+              <span class="tag">Library</span>
             </div>
             <div class="template-grid">
               <div class="template-item" v-for="tpl in reportTemplates" :key="tpl.name">
@@ -296,8 +278,8 @@
 
           <article class="card page-card">
             <div class="panel-header">
-              <h2>{{ t('reports.exportQueue') }}</h2>
-              <span class="tag">{{ t('reports.jobs') }}</span>
+              <h2>Export Queue</h2>
+              <span class="tag">Jobs</span>
             </div>
             <ul class="simple-list">
               <li v-for="job in reportJobs" :key="job.name">
@@ -312,8 +294,8 @@
 
           <article class="card page-card span-2">
             <div class="panel-header">
-              <h2>{{ t('reports.recentExports') }}</h2>
-              <button class="ghost-btn">{{ t('reports.downloadAll') }}</button>
+              <h2>Recent Exports</h2>
+              <button class="ghost-btn">Download All</button>
             </div>
             <div class="report-list horizontal">
               <button class="report-btn" v-for="history in reportHistory" :key="history.id">
@@ -327,16 +309,16 @@
 
       <template v-else>
         <section class="hero card page-hero">
-          <p class="eyebrow">{{ t('settings.eyebrow') }}</p>
-          <h1>{{ t('settings.title') }}</h1>
-          <p class="hero-subtitle">{{ t('settings.subtitle') }}</p>
+          <p class="eyebrow">Platform Controls</p>
+          <h1>Settings</h1>
+          <p class="hero-subtitle">Manage model behavior, notification policies, and IoT device security preferences.</p>
         </section>
 
         <section class="page-grid two-col">
           <article class="card page-card">
             <div class="panel-header">
-              <h2>{{ t('settings.realtime') }}</h2>
-              <span class="tag">{{ t('settings.security') }}</span>
+              <h2>Realtime Preferences</h2>
+              <span class="tag">Security</span>
             </div>
             <div class="settings-list">
               <div class="setting-row" v-for="(setting, index) in settingToggles" :key="setting.name">
@@ -353,8 +335,8 @@
 
           <article class="card page-card">
             <div class="panel-header">
-              <h2>{{ t('settings.environment') }}</h2>
-              <span class="tag">{{ t('settings.system') }}</span>
+              <h2>Environment</h2>
+              <span class="tag">System</span>
             </div>
             <ul class="simple-list compact">
               <li v-for="meta in settingsMeta" :key="meta.key">
@@ -373,12 +355,10 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 
-const { t, locale } = useI18n();
-
+const currentLang = ref('EN');
 const toggleLang = () => {
-  locale.value = locale.value === 'EN' ? 'ZH' : 'EN';
+  currentLang.value = currentLang.value === 'EN' ? 'ZH' : 'EN';
 };
 
 const navItems = ['Dashboard', 'Image Uploads', 'Detection Results', 'Reports', 'Settings'];
