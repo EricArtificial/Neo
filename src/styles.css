@@ -361,8 +361,13 @@ body {
 
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.ai-full-width {
+  margin-top: 1rem;
+  padding: 1rem;
 }
 
 .page-hero h1 {
@@ -754,9 +759,11 @@ body {
 }
 
 .preview-box {
+  position: relative;
   border: 1px solid #e3e3e9;
   border-radius: 12px;
   min-height: 94px;
+  overflow: hidden;
 }
 
 .preview-box.original {
@@ -791,6 +798,30 @@ body {
   color: #1d1d1f;
 }
 
+.box-visual {
+  background-size: cover;
+  background-position: center;
+}
+
+.box-overlay-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.tamper-box {
+  position: absolute;
+  border: 2px solid #ff375f;
+  background: rgba(255, 55, 95, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+}
+
+.case-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
 .report-list {
   display: grid;
   gap: 0.5rem;
@@ -805,7 +836,6 @@ body {
   padding: 0.55rem 0.65rem;
   font-weight: 600;
   font-size: 0.79rem;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 

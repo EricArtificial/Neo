@@ -22,28 +22,9 @@
     </header>
 
     <main class="container">
-      <template v-if="activeNav === 'Dashboard'">
-        <section class="hero card dashboard-hero-stripe">
-          <div class="stripe-gradient-bg"></div>
-          <div class="dashboard-hero-content">
-            <div class="dashboard-hero-eyebrow">NeoVision AI</div>
-            <h1 class="dashboard-hero-title">
-              <span class="hero-gradient">{{ t('dashboard.title') }}</span>
-            </h1>
-            <div class="dashboard-hero-subtitle">
-              {{ t('dashboard.product_sub1') }}<br />
-              {{ t('dashboard.product_sub2') }}<br />
-              {{ t('dashboard.product_sub3') }}
-            </div>
-            <div class="dashboard-hero-actions">
-              <button class="dashboard-hero-btn dashboard-hero-btn-primary">{{ t('dashboard.stripe_get_started') }}</button>
-              <button class="dashboard-hero-btn dashboard-hero-btn-google">
-                <span class="google-icon"></span>{{ t('dashboard.stripe_google') }}
-              </button>
-            </div>
-          </div>
-        </section>
+      <p v-if="apiError" class="api-error">{{ apiError }}</p>
 
+      <template v-if="activeNav === 'Dashboard'">
         <h1>Dashboard</h1>
 
         <section class="card workflow-panel">
@@ -91,9 +72,12 @@
               <li v-for="item in recentUploads" :key="item.id">
                 <div>
                   <strong>{{ item.id }}</strong>
-                  <span>{{ item.device }} · {{ item.time }}</span>
+                  <span>{{ item.device }} · {{ item.time }} · hash {{ item.hashValue }}</span>
                 </div>
-                <em>{{ item.status }}</em>
+                <div class="case-actions">
+                  <em>{{ item.status }}</em>
+                  <button class="ghost-btn mini" @click="selectAnalysisById(item.id)">View</button>
+                </div>
               </li>
             </ul>
           </article>
@@ -119,209 +103,59 @@
 
           <article class="card feature-card">
             <div class="card-head">
-              <h3>{{ t('dashboard.aiResults') }}</h3>
-              <span class="tag">{{ t('dashboard.inference') }}</span>
-            </div>
-            <p>{{ t('dashboard.aiDesc') }}</p>
-            <div class="analysis-preview">
-              <div class="preview-box original"></div>
-              <div class="preview-box heatmap"></div>
-              <div class="analysis-text">
-                <span>{{ t('dashboard.lastResult') }}: {{ analysisResult.summary }}</span>
-                <strong>{{ analysisResult.confidence }}% {{ t('dashboard.tamperProb') }}</strong>
-              </div>
-            </div>
-          </article>
-
-          <article class="card feature-card">
-            <div class="card-head">
               <h3>{{ t('dashboard.reportExport') }}</h3>
               <span class="tag">{{ t('dashboard.pdf') }}</span>
             </div>
             <p>{{ t('dashboard.reportDesc') }}</p>
             <div class="report-list">
-              <button class="report-btn" v-for="report in reports" :key="report.id">
-                {{ report.name }}
-              </button>
-            </div>
-          </article>
-        </section>
-      </template>
-
-      <template v-else-if="activeNav === 'Image Uploads'">
-        <section class="hero card page-hero">
-          <p class="eyebrow">{{ t('uploads.eyebrow') }}</p>
-          <h1>{{ t('uploads.title') }}</h1>
-          <p class="hero-subtitle">{{ t('uploads.subtitle') }}</p>
-        </section>
-
-        <section class="page-grid two-col">
-          <article class="card page-card">
-            <div class="panel-header">
-              <h2>{{ t('uploads.overview') }}</h2>
-              <span class="tag">{{ t('uploads.live') }}</span>
-            </div>
-            <div class="kpi-grid">
-              <div class="kpi-item" v-for="item in uploadOverview" :key="item.label">
-                <p>{{ item.label }}</p>
-                <strong>{{ item.value }}</strong>
-              </div>
-            </div>
-          </article>
-
-          <article class="card page-card">
-            <div class="panel-header">
-              <h2>{{ t('uploads.cameraHealth') }}</h2>
-              <span class="tag">{{ t('uploads.fleet') }}</span>
-            </div>
-            <ul class="simple-list">
-              <li v-for="device in uploadDevices" :key="device.name">
-                <div>
-                  <strong>{{ device.name }}</strong>
-                  <span>{{ device.note }}</span>
+              <div class="report-btn" v-for="report in reports" :key="report.id">
+                <strong>Document {{ report.id }}</strong>
+                <span>{{ report.filename }}</span>
+                <div class="case-actions">
+                  <button class="ghost-btn mini" @click="generateReport(report.id)">Generate</button>
+                  <button class="ghost-btn mini" @click="downloadReport(report.id)">Download</button>
                 </div>
-                <span class="status-pill" :class="device.stateClass">{{ device.state }}</span>
-              </li>
-            </ul>
-          </article>
-
-          <article class="card page-card span-2">
-            <div class="panel-header">
-              <h2>{{ t('uploads.latestBatches') }}</h2>
-              <button class="ghost-btn">{{ t('uploads.exportCsv') }}</button>
-            </div>
-            <div class="table-wrap">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>{{ t('uploads.batch') }}</th>
-                    <th>{{ t('uploads.device') }}</th>
-                    <th>{{ t('uploads.frames') }}</th>
-                    <th>{{ t('uploads.tampered') }}</th>
-                    <th>{{ t('uploads.uploadedAt') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="batch in uploadBatches" :key="batch.id">
-                    <td>{{ batch.id }}</td>
-                    <td>{{ batch.device }}</td>
-                    <td>{{ batch.frames }}</td>
-                    <td>{{ batch.tampered }}</td>
-                    <td>{{ batch.time }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-        </section>
-      </template>
-
-
-      <template v-else-if="activeNav === 'Detection Results'">
-        <section class="hero card page-hero">
-          <p class="eyebrow">{{ t('results.eyebrow') }}</p>
-          <h1>{{ t('results.title') }}</h1>
-          <p class="hero-subtitle">{{ t('results.subtitle') }}</p>
-        </section>
-
-        <section class="page-grid two-col">
-          <article class="card page-card">
-            <div class="panel-header">
-              <h2>{{ t('results.summary') }}</h2>
-              <span class="tag">{{ t('results.h24') }}</span>
-            </div>
-            <div class="kpi-grid">
-              <div class="kpi-item" v-for="item in resultSummary" :key="item.label">
-                <p>{{ item.label }}</p>
-                <strong>{{ item.value }}</strong>
-              </div>
-            </div>
-          </article>
-
-          <article class="card page-card">
-            <div class="panel-header">
-              <h2>{{ t('results.flagged') }}</h2>
-              <span class="tag">{{ t('results.priority') }}</span>
-            </div>
-            <ul class="simple-list">
-              <li v-for="item in resultCases" :key="item.id">
-                <div>
-                  <strong>{{ item.id }} · {{ item.device }}</strong>
-                  <span>{{ item.region }} · {{ item.confidence }}%</span>
-                </div>
-                <span class="status-pill" :class="item.stateClass">{{ item.state }}</span>
-              </li>
-            </ul>
-          </article>
-
-          <article class="card page-card span-2">
-            <div class="panel-header">
-              <h2>{{ t('results.visualization') }}</h2>
-              <button class="ghost-btn">{{ t('results.openViewer') }}</button>
-            </div>
-            <div class="analysis-preview larger">
-              <div class="preview-box original"></div>
-              <div class="preview-box heatmap"></div>
-              <div class="analysis-text">
-                <span>{{ t('results.modelExplanation') }}</span>
-                <strong>{{ t('results.explainText') }}</strong>
               </div>
             </div>
           </article>
         </section>
-      </template>
 
-
-      <template v-else-if="activeNav === 'Reports'">
-        <section class="hero card page-hero">
-          <p class="eyebrow">{{ t('reports.eyebrow') }}</p>
-          <h1>{{ t('reports.title') }}</h1>
-          <p class="hero-subtitle">{{ t('reports.subtitle') }}</p>
-        </section>
-
-        <section class="page-grid two-col">
-          <article class="card page-card">
-            <div class="panel-header">
-              <h2>{{ t('reports.templates') }}</h2>
-              <span class="tag">{{ t('reports.library') }}</span>
-            </div>
-            <div class="template-grid">
-              <div class="template-item" v-for="tpl in reportTemplates" :key="tpl.name">
-                <strong>{{ tpl.name }}</strong>
-                <span>{{ tpl.desc }}</span>
-                <em>{{ tpl.type }}</em>
+        <section class="card ai-full-width">
+          <div class="panel-header">
+            <h2>{{ t('dashboard.aiResults') }}</h2>
+            <span class="tag">{{ t('dashboard.inference') }}</span>
+          </div>
+          <p>{{ t('dashboard.aiDesc') }}</p>
+          <div class="analysis-preview larger">
+            <div class="preview-box original box-visual" :style="analysisBackgroundStyle">
+              <div class="box-overlay-layer">
+                <div
+                  v-for="(box, index) in visualizationBoxes"
+                  :key="`analysis-${index}`"
+                  class="tamper-box"
+                  :style="box"
+                ></div>
               </div>
             </div>
-          </article>
-
-          <article class="card page-card">
-            <div class="panel-header">
-              <h2>{{ t('reports.exportQueue') }}</h2>
-              <span class="tag">{{ t('reports.jobs') }}</span>
+            <div class="preview-box heatmap box-visual" :style="analysisBackgroundStyle">
+              <div class="box-overlay-layer">
+                <div
+                  v-for="(box, index) in visualizationBoxes"
+                  :key="`heat-${index}`"
+                  class="tamper-box"
+                  :style="box"
+                ></div>
+              </div>
             </div>
-            <ul class="simple-list">
-              <li v-for="job in reportJobs" :key="job.name">
-                <div>
-                  <strong>{{ job.name }}</strong>
-                  <span>{{ job.time }}</span>
-                </div>
-                <span class="status-pill" :class="job.stateClass">{{ job.state }}</span>
-              </li>
-            </ul>
-          </article>
-
-          <article class="card page-card span-2">
-            <div class="panel-header">
-              <h2>{{ t('reports.recentExports') }}</h2>
-              <button class="ghost-btn">{{ t('reports.downloadAll') }}</button>
+            <div class="analysis-text">
+              <span>{{ t('dashboard.lastResult') }}: {{ analysisResult.summary }}</span>
+              <strong>{{ analysisResult.confidence }}% {{ t('dashboard.tamperProb') }}</strong>
+              <span>is_tampered: {{ analysisResult.isTampered }}</span>
+              <span>num_boxes: {{ analysisResult.numBoxes }}</span>
+              <span>mask_shape: {{ analysisResult.maskShape }}</span>
+              <span>boxes: {{ analysisResult.boxes }}</span>
             </div>
-            <div class="report-list horizontal">
-              <button class="report-btn" v-for="history in reportHistory" :key="history.id">
-                <strong>{{ history.name }}</strong>
-                <span>{{ history.meta }}</span>
-              </button>
-            </div>
-          </article>
+          </div>
         </section>
       </template>
 
@@ -381,11 +215,100 @@ const toggleLang = () => {
   locale.value = locale.value === 'EN' ? 'ZH' : 'EN';
 };
 
-const navItems = ['Dashboard', 'Image Uploads', 'Detection Results', 'Reports', 'Settings'];
+const navItems = ['Dashboard', 'Settings'];
 const activeNav = ref('Dashboard');
 
 function formatNumber(value) {
   return new Intl.NumberFormat('en-US').format(value);
+}
+
+const API_BASE = 'http://47.121.198.34:8000';
+const API_REFRESH_MS = 12000;
+
+const apiError = ref('');
+const documents = ref([]);
+const selectedDocumentId = ref(null);
+
+function apiUrl(path) {
+  return `${API_BASE}${path}`;
+}
+
+function normalizeConfidence(value) {
+  const numeric = Number(value ?? 0);
+  if (Number.isNaN(numeric)) {
+    return 0;
+  }
+  return numeric <= 1 ? Number((numeric * 100).toFixed(1)) : Number(numeric.toFixed(1));
+}
+
+function formatClock(value) {
+  if (!value) {
+    return '--:--:--';
+  }
+  const normalized = String(value).replace(' ', 'T');
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) {
+    return '--:--:--';
+  }
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
+}
+
+function mapDocument(item) {
+  const analysis = item.analysis || {};
+  const id = Number(item.id || 0);
+  const rawImageUrl = item.image_url || '';
+
+  return {
+    id,
+    device: item.device_id || 'unknown',
+    filename: item.filename || `document_${id}.jpg`,
+    hashValue: item.hash_value || '',
+    uploadTime: item.upload_time || '',
+    imageUrl: rawImageUrl.startsWith('http') ? rawImageUrl : rawImageUrl ? apiUrl(rawImageUrl) : '',
+    isTampered: Boolean(analysis.is_tampered),
+    confidence: normalizeConfidence(analysis.confidence),
+    numBoxes: Number(analysis.num_boxes || 0),
+    boxes: Array.isArray(analysis.boxes) ? analysis.boxes : [],
+    maskShape: Array.isArray(analysis.mask_shape) ? analysis.mask_shape : []
+  };
+}
+
+async function fetchDocuments() {
+  const response = await fetch(apiUrl('/documents'));
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`);
+  }
+  const payload = await response.json();
+  const list = Array.isArray(payload) ? payload : [];
+  documents.value = list
+    .map(mapDocument)
+    .sort((a, b) => new Date(b.uploadTime).getTime() - new Date(a.uploadTime).getTime());
+
+  if (!selectedDocumentId.value && documents.value.length) {
+    selectedDocumentId.value = documents.value[0].id;
+  }
+}
+
+function selectAnalysisById(id) {
+  selectedDocumentId.value = id;
+}
+
+async function generateReport(id) {
+  try {
+    const response = await fetch(apiUrl(`/generate_report/${id}?background=true`), { method: 'POST' });
+    if (!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    apiError.value = `Generate report failed: ${error.message}`;
+  }
+}
+
+function downloadReport(id) {
+  window.open(apiUrl(`/download_report/${id}`), '_blank', 'noopener,noreferrer');
 }
 
 const pipelineNames = [
@@ -397,18 +320,29 @@ const pipelineNames = [
 ];
 
 const activeStep = ref(2);
-const systemStatus = ref({
-  uploaded: 4982,
-  tampered: 386,
-  confidence: 93.1
+const systemStatus = computed(() => {
+  const total = documents.value.length;
+  const tampered = documents.value.filter((doc) => doc.isTampered).length;
+  const confidence = total
+    ? Number((documents.value.reduce((sum, doc) => sum + doc.confidence, 0) / total).toFixed(1))
+    : 0;
+
+  return {
+    uploaded: total,
+    tampered,
+    confidence
+  };
 });
 
-const recentUploads = ref([
-  { id: 'IMG_23911', device: 'ESP-CAM-01', time: '09:21:14', status: 'Uploaded' },
-  { id: 'IMG_23908', device: 'ESP-CAM-12', time: '09:20:58', status: 'Uploaded' },
-  { id: 'IMG_23902', device: 'ESP-CAM-05', time: '09:19:40', status: 'Queued' },
-  { id: 'IMG_23896', device: 'ESP-CAM-23', time: '09:18:33', status: 'Uploaded' }
-]);
+const recentUploads = computed(() =>
+  documents.value.slice(0, 6).map((doc) => ({
+    id: doc.id,
+    device: doc.device,
+    time: formatClock(doc.uploadTime),
+    hashValue: doc.hashValue,
+    status: doc.isTampered ? 'Tampered' : 'Clean'
+  }))
+);
 
 const detectionQueue = ref([
   { name: 'Ingestion', pending: 22, progress: 76 },
@@ -417,16 +351,73 @@ const detectionQueue = ref([
   { name: 'Post-validation', pending: 6, progress: 83 }
 ]);
 
-const analysisResult = ref({
-  summary: 'Edge blending anomaly in lower-right region',
-  confidence: 96.4
+const selectedDocument = computed(
+  () => documents.value.find((doc) => doc.id === selectedDocumentId.value) || documents.value[0] || null
+);
+
+const analysisResult = computed(() => {
+  const doc = selectedDocument.value;
+  if (!doc) {
+    return {
+      summary: 'No document selected',
+      confidence: 0,
+      isTampered: '-',
+      numBoxes: 0,
+      maskShape: '-',
+      boxes: '[]'
+    };
+  }
+
+  return {
+    summary: `Document ${doc.id} · ${doc.filename}`,
+    confidence: doc.confidence,
+    isTampered: doc.isTampered,
+    numBoxes: doc.numBoxes,
+    maskShape: doc.maskShape.length ? doc.maskShape.join(' x ') : '-',
+    boxes: JSON.stringify(doc.boxes)
+  };
 });
 
-const reports = ref([
-  { id: 1, name: 'Daily Security Report.pdf' },
-  { id: 2, name: 'Tampering Incident Log.pdf' },
-  { id: 3, name: 'Device Confidence Summary.pdf' }
-]);
+const reports = computed(() => documents.value.slice(0, 5));
+
+const analysisBackgroundStyle = computed(() => {
+  const url = selectedDocument.value?.imageUrl;
+  if (!url) {
+    return {};
+  }
+  return {
+    backgroundImage: `url(${url})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  };
+});
+
+const visualizationBoxes = computed(() => {
+  const doc = selectedDocument.value;
+  if (!doc?.boxes?.length || !doc.maskShape?.length) {
+    return [];
+  }
+
+  const sourceHeight = Number(doc.maskShape[0] || 1);
+  const sourceWidth = Number(doc.maskShape[1] || sourceHeight || 1);
+
+  return doc.boxes
+    .filter((box) => Array.isArray(box) && box.length === 4)
+    .map((box) => {
+      const [x1, y1, x2, y2] = box.map((value) => Number(value || 0));
+      const left = Math.max(0, Math.min(100, (x1 / sourceWidth) * 100));
+      const top = Math.max(0, Math.min(100, (y1 / sourceHeight) * 100));
+      const width = Math.max(1, ((x2 - x1) / sourceWidth) * 100);
+      const height = Math.max(1, ((y2 - y1) / sourceHeight) * 100);
+
+      return {
+        left: `${left}%`,
+        top: `${top}%`,
+        width: `${Math.min(100 - left, width)}%`,
+        height: `${Math.min(100 - top, height)}%`
+      };
+    });
+});
 
 const uploadOverview = [
   { label: 'Images Today', value: '12,481' },
@@ -455,29 +446,6 @@ const resultSummary = computed(() => [
   { label: 'Avg Confidence', value: `${systemStatus.value.confidence}%` }
 ]);
 
-const resultCases = ref([
-  { id: 'CASE-1192', device: 'ESP-CAM-07', region: 'Gate A', confidence: 96.4, state: 'Tampered', stateClass: 'critical' },
-  { id: 'CASE-1188', device: 'ESP-CAM-14', region: 'Dock 3', confidence: 91.2, state: 'Review', stateClass: 'warn' },
-  { id: 'CASE-1182', device: 'ESP-CAM-02', region: 'Hallway', confidence: 84.9, state: 'Observed', stateClass: 'neutral' }
-]);
-
-const reportTemplates = [
-  { name: 'Daily Executive Summary', desc: 'Overview of anomalies, confidence trend, and critical events', type: 'PDF Template' },
-  { name: 'Device Forensic Report', desc: 'Per-device anomaly timeline with visual evidence snapshots', type: 'PDF Template' },
-  { name: 'Compliance Export Pack', desc: 'Structured report bundle for monthly audit reviews', type: 'ZIP + PDF' }
-];
-
-const reportJobs = [
-  { name: 'Daily Security Digest', time: 'Running · 10:15', state: 'Processing', stateClass: 'neutral' },
-  { name: 'Incident #217 Package', time: 'Queued · 10:09', state: 'Queued', stateClass: 'warn' },
-  { name: 'Board Summary', time: 'Completed · 09:52', state: 'Ready', stateClass: 'ok' }
-];
-
-const reportHistory = [
-  { id: 1, name: 'Executive Summary · March 07', meta: 'Generated 09:45 · 2.4 MB' },
-  { id: 2, name: 'Tampering Casebook · Week 10', meta: 'Generated 08:10 · 5.8 MB' },
-  { id: 3, name: 'Fleet Confidence Audit', meta: 'Generated 07:50 · 1.7 MB' }
-];
 
 const settingToggles = ref([
   { name: 'Realtime Detection Alerts', desc: 'Push critical tampering alerts to incident channel.', enabled: true },
@@ -515,55 +483,21 @@ const workflowSteps = computed(() => {
 });
 
 const tickRealtime = () => {
-  const uploadDelta = Math.floor(3 + Math.random() * 8);
-  const tamperedDelta = Math.floor(Math.random() * 2);
-  const confidenceDrift = (Math.random() - 0.45) * 0.3;
-
-  systemStatus.value.uploaded += uploadDelta;
-  systemStatus.value.tampered += tamperedDelta;
-  systemStatus.value.confidence = Math.min(
-    99.4,
-    Math.max(88.5, Number((systemStatus.value.confidence + confidenceDrift).toFixed(1)))
-  );
-
   activeStep.value = (activeStep.value + 1) % pipelineNames.length;
-
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, '0');
-  const mm = String(now.getMinutes()).padStart(2, '0');
-  const ss = String(now.getSeconds()).padStart(2, '0');
-  const device = `ESP-CAM-${String(1 + Math.floor(Math.random() * 24)).padStart(2, '0')}`;
-  const statusPool = ['Uploaded', 'Uploaded', 'Queued', 'Synced'];
-
-  recentUploads.value.unshift({
-    id: `IMG_${Math.floor(23000 + Math.random() * 2000)}`,
-    device,
-    time: `${hh}:${mm}:${ss}`,
-    status: statusPool[Math.floor(Math.random() * statusPool.length)]
-  });
-
-  if (recentUploads.value.length > 4) {
-    recentUploads.value.pop();
-  }
-
-  detectionQueue.value = detectionQueue.value.map((item) => {
-    const pendingDelta = Math.floor(Math.random() * 3) - 1;
-    const progressDelta = Math.floor(Math.random() * 9) - 4;
-
-    return {
-      ...item,
-      pending: Math.max(0, item.pending + pendingDelta),
-      progress: Math.min(99, Math.max(25, item.progress + progressDelta))
-    };
-  });
-
-  analysisResult.value.confidence = Number((94 + Math.random() * 4.8).toFixed(1));
-  resultCases.value[0].confidence = Number((94 + Math.random() * 4).toFixed(1));
 };
 
 let timerId;
 
 onMounted(() => {
+  fetchDocuments().catch((error) => {
+    apiError.value = `API request failed: ${error.message}`;
+  });
+  window.setInterval(() => {
+    fetchDocuments().catch((error) => {
+      apiError.value = `API request failed: ${error.message}`;
+    });
+  }, API_REFRESH_MS);
+
   timerId = window.setInterval(tickRealtime, 2600);
 });
 
